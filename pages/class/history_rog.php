@@ -42,7 +42,7 @@ function Header()
     // //cell(width,height,text,border,end line,[align])
     $this->Cell(0,6,'REPORTS OF GRADES',0,1,'C');
     $this->SetFont('Arial','B',10);
-    $this->Cell(0,4,$_SESSION['active_sem'].' '.$_SESSION['active_acad'],0,1,'C');
+    $this->Cell(0,4,$_GET['sem'].' '.$_GET['ay'],0,1,'C');
 
     $this->Ln(3);
 
@@ -418,14 +418,14 @@ function Footer()
 {include '../../includes/db.php';
     // Position at 1.5 cm from bottom
     $this->Rect(10,241.7,196.72,70);
-$sql = mysqli_query($db,"SELECT *,CONCAT(tbl_faculties_staff.faculty_firstname, ' ', tbl_faculties_staff.faculty_middlename, ' ', tbl_faculties_staff.faculty_lastname)  AS fullname FROM tbl_faculties_staff where faculty_id = '$_SESSION[userid]'");
-    $row = mysqli_fetch_array($sql);
+// $sql = mysqli_query($db,"SELECT *,CONCAT(tbl_faculties_staff.faculty_firstname, ' ', tbl_faculties_staff.faculty_middlename, ' ', tbl_faculties_staff.faculty_lastname)  AS fullname FROM tbl_faculties_staff where faculty_id = '$_SESSION[userid]'");
+//     $row = mysqli_fetch_array($sql);
 
 $this->SetXY(10,255);
 $this->SetFontSize(8);
 $this->Cell(20,5,'Prepared by:',0,0);
 $this->SetFont('Arial','B','10');
-$this->Cell(50,5,strtoupper($row['fullname']),'B',0,'C');//=====================PROFESSOR NAME=================
+$this->Cell(50,5,strtoupper($_SESSION['user']),'B',0,'C');//=====================PROFESSOR NAME=================
 $this->Cell(5,5,'',0,0);
 $this->Cell(30,5,date('M d, Y'),'B',1,'C');
 
