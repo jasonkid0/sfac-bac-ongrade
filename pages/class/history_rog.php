@@ -418,8 +418,8 @@ function Footer()
 {include '../../includes/db.php';
     // Position at 1.5 cm from bottom
     $this->Rect(10,241.7,196.72,70);
-// $sql = mysqli_query($db,"SELECT *,CONCAT(tbl_faculties_staff.faculty_firstname, ' ', tbl_faculties_staff.faculty_middlename, ' ', tbl_faculties_staff.faculty_lastname)  AS fullname FROM tbl_faculties_staff where faculty_id = '$_SESSION[userid]'");
-//     $row = mysqli_fetch_array($sql);
+$sql = mysqli_query($db,"SELECT *,CONCAT(tbl_faculties_staff.faculty_firstname, ' ', tbl_faculties_staff.faculty_middlename, ' ', tbl_faculties_staff.faculty_lastname)  AS fullname FROM tbl_faculties_staff where faculty_id = '$_SESSION[userid]'");
+    $row = mysqli_fetch_array($sql);
 
 $this->SetXY(10,255);
 $this->SetFontSize(8);

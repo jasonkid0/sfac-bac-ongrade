@@ -22,7 +22,8 @@
       'searching'   : true,
       'ordering'    : false,
       'info'        : true,
-      'autoWidth'   : false
+      'autoWidth'   : false,
+      'pageLength'  : 100
     })
     // $('#example1').DataTable()
     

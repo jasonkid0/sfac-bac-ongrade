@@ -30,6 +30,7 @@ include 'db.php';
                                     $user = mysqli_query($db,"SELECT * from tbl_admins where admin_id = '".$_SESSION['userid']."' ");
                                     while($row = mysqli_fetch_array($user)){
                                         $_SESSION['user'] = $row['admin_firstname'].' '.$row['admin_lastname'];
+                                        $_SESSION['name'] = $row['admin_lastname'].', '.$row['admin_firstname'];
                                         echo '
           <img src="data:image/jpeg;base64,'.base64_encode( $row['img'] ).'" class="user-image" alt="User Image">';
                                     }

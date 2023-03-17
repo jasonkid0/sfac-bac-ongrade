@@ -1,6 +1,19 @@
 <?php
 include '../../includes/session.php';
 include '../../includes/db.php';
+
+if (isset($_GET['ay'])) {
+  $ay = $_GET['ay'];
+} else {
+  $ay = $_SESSION['active_acad'];
+}
+
+if (isset($_GET['sem'])) {
+  $sem = $_GET['sem'];
+} else {
+  $sem = $_SESSION['active_sem'];
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -18,7 +31,12 @@ include '../../includes/db.php';
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1>List of Enrolled Student(s) in <strong><?php echo $_GET['code']; ?></strong> - Section <strong><?php echo $_GET['section'] ?></strong> - A.Y. <strong><?php echo $_SESSION['active_acad'].'-'.$_SESSION['active_sem'] ?></strong></h1>
+      <h1>List of Enrolled Student(s) in <strong><?php echo $_GET['code']; ?></strong> - Section <strong><?php echo $_GET['section'] ?>
+      
+      
+      </strong> - A.Y. <strong><?php echo $ay.'-'.$sem ?></strong></h1>
+    
+    
     </section>
 
     <!-- Main content -->
@@ -33,12 +51,15 @@ include '../../includes/db.php';
               <?php $que= mysqli_query($db,"
                 SELECT * 
                 FROM tbl_subjects_new 
-                where subj_code = '$_GET[code]' LIMIT 1");
+                where subj_code = '$_GET[code]' LIMIT 1")  or die(mysqli_error($db));
               while ($row = mysqli_fetch_array($que)) {
                 ?>
-              <h2 class="box-title">Students Enrolled in <strong><?php echo $_GET['code'].' - '.$_GET['class_desc']; ?></strong> - Section <strong><?php echo $_GET['section'] ?></strong></h2>
+              <h2 class="box-title">Students Enrolled in <strong><?php echo $_GET['code'].' - '.$_GET['section']; ?></strong> - Section <strong><?php echo $_GET['section'] ?></strong></h2>
             <?php } ?>
-              <a href="javascript:history.back()" class="btn btn-primary pull-right">Back</a>
+              <div class="pull-right">
+                <a class="btn btn-primary  ms-2" href="section_stud.php?code=<?php echo $_GET['code']; ?>&section=<?php echo $_GET['section']; ?>&class_desc=<?php echo $_GET['class_desc']; ?>">Enter class grades</a>
+                <a href="javascript:history.back()" class="btn btn-primary  ms-2">Back</a>
+              </div>
             </div>
             <div class="box-body">
               <table id="example1" class="table table-bordered table-hover dataTable">
@@ -65,20 +86,19 @@ include '../../includes/db.php';
                   <?php 
 
                   $que = mysqli_query($db,
-                        "SELECT *,tbl_students.img,CONCAT(tbl_students.lastname, ', ', tbl_students.firstname, ' ', tbl_students.middlename)  AS fullname
-                        FROM tbl_enrolled_subjects 
-                        LEFT JOIN tbl_subjects_new ON tbl_subjects_new.subj_id = tbl_enrolled_subjects.subj_id
-                        LEFT JOIN tbl_students ON tbl_students.stud_id = tbl_enrolled_subjects.stud_id
-                        LEFT JOIN tbl_schedules ON tbl_schedules.class_id = tbl_enrolled_subjects.class_id
-                        LEFT JOIN tbl_faculties_staff ON tbl_faculties_staff.faculty_id = tbl_schedules.faculty_id   
-                        LEFT JOIN tbl_schoolyears ON tbl_schoolyears.stud_id = tbl_students.stud_id
-                        LEFT JOIN tbl_courses ON tbl_courses.course_id = tbl_schoolyears.course_id
-                        WHERE tbl_schoolyears.ay_id = '$_SESSION[active_acad]' 
-                        AND tbl_schoolyears.sem_id ='$_SESSION[active_sem]' 
-                        AND tbl_subjects_new.subj_code = '$_GET[code]' 
-                        AND tbl_schedules.section = '$_GET[section]'
-                        And tbl_schoolyears.remark= 'Approved'
-                        ORDER BY fullname");
+                  "SELECT *,tbl_students.img,CONCAT(tbl_students.lastname, ', ', tbl_students.firstname, ' ', tbl_students.middlename)  as fullname FROM tbl_enrolled_subjects 
+                  LEFT JOIN tbl_subjects_new ON tbl_subjects_new.subj_id = tbl_enrolled_subjects.subj_id
+                  LEFT JOIN tbl_students ON tbl_students.stud_id = tbl_enrolled_subjects.stud_id
+                  LEFT JOIN tbl_schedules ON tbl_schedules.class_id = tbl_enrolled_subjects.class_id LEFT JOIN tbl_faculties_staff ON tbl_faculties_staff.faculty_id = tbl_schedules.faculty_id 
+                  LEFT JOIN tbl_schoolyears ON tbl_schoolyears.stud_id = tbl_students.stud_id
+                  LEFT JOIN tbl_courses ON tbl_courses.course_id = tbl_schoolyears.course_id
+                  
+                  WHERE tbl_schoolyears.ay_id = '$ay' 
+                  AND tbl_schoolyears.sem_id ='$sem'
+                  AND tbl_subjects_new.subj_code = '$_GET[code]' 
+                  AND tbl_schedules.section = '$_GET[section]' 
+                  AND tbl_schoolyears.remark = 'Approved' 
+                  ORDER BY fullname");
 
                   while($row = mysqli_fetch_array($que)){
                     echo'<tr> <style>
@@ -117,14 +137,14 @@ include '../../includes/db.php';
                               echo'<td>'.$row['absences'].'</td>
                               
                                     <td>
-                                      <a href="../class/edit_class_stud.php?stud_id='.$row['stud_id'].'&code='.$_GET['code'].'&section='.$row['section'].'" class="btn btn-danger">Transfer to other Section</a>
+                                      <a href="edit_class_stud.php?stud_id='.$row['stud_id'].'&code='.$_GET['code'].'&section='.$row['section'].'" class="btn btn-danger disabled">Transfer to other Section</a>
                                       <button class="btn btn-success btn-sm" data-target="#editModal'.$row['enrolled_subj_id'].'" data-toggle="modal"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Enter Grade</button>
                                     </td>
                           </tr> 
 
                                   <!--==========================ENTER GRADE MODAL==========================-->
                   <div id="editModal'.$row['enrolled_subj_id'].'" class="modal fade">
-                  <form method="POST" class="form-horizontal">
+                  <form method="POST" class="form-horizontal" action="ctrlData/student_grade.php?code='. $_GET['code'].'&section='. $_GET['section'].'&class_desc='. $_GET['class_desc'].'">
                     <div class="modal-dialog modal-sm" style="width:40% !important;">
                       <div class="modal-content">
                           <div class="modal-header">
@@ -135,6 +155,7 @@ include '../../includes/db.php';
                           <div class="row">
                               <div class="col-md-12">
                                   <input type="hidden" value="'.$row['enrolled_subj_id'].'" name="hidden_id" id="hidden_id"/>
+                                  <input type="hidden" value="'.$row['special_tut'].'" name="special_tut" id="hidden_id"/>
                                   <div class="row">
                               <div class="box-header with-border">
                                 <h3 class="box-title"></h3>
@@ -208,255 +229,7 @@ include '../../includes/db.php';
                   </form>
                   </div>';
                   
-if (isset($_POST['btn_save'])) 
-{
-                    $enrolled_subj_id = mysqli_real_escape_string($db,$_POST['hidden_id']);
-
-      if ($_SESSION['active_sem'] == 'First Semester' || $_SESSION['active_sem'] == 'Second Semester') 
-      {
-                        if ($row['special_tut'] == '0' || $row['special_tut'] == '')
-                        {
-                                if (empty($_POST['prelim'])) {
-                                  $prelim = mysqli_real_escape_string($db,'0');
-                                }else{
-                                $prelim = mysqli_real_escape_string($db,$_POST['prelim']);
-                                }
-                                if (empty($_POST['midterm'])) {
-                                  $midterm = mysqli_real_escape_string($db,'0');
-                                }else{
-                                $midterm = mysqli_real_escape_string($db,$_POST['midterm']);
-                                }
-                                if (empty($_POST['finalterm'])) {
-                                  $finalterm = mysqli_real_escape_string($db,'0');
-                                }else{
-                                $finalterm = mysqli_real_escape_string($db,$_POST['finalterm']);
-                                }
-                                $ofgrade = mysqli_real_escape_string($db,number_format( (float)(($prelim * 0.3) + ($midterm * 0.3) + ($finalterm * 0.4)), 2, '.', '' ) );
-
-                                if ($prelim== '0' || $midterm == '0' || $finalterm == '0') {
-                                  $remarks = mysqli_real_escape_string($db,'INC');
-                                  $numgrade = mysqli_real_escape_string($db,'INC');
-                                }else{
-                                      if ($ofgrade <= 74) {
-                                        $numgrade = mysqli_real_escape_string($db,'5.00');
-                                        $remarks = mysqli_real_escape_string($db,'Failed');
-                                      }elseif ($ofgrade <= 79.49){
-                                        $numgrade = mysqli_real_escape_string($db,'3.00');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 82.49){
-                                        $numgrade = mysqli_real_escape_string($db,'2.75');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 84.49){
-                                        $numgrade = mysqli_real_escape_string($db,'2.50');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 87.49){
-                                        $numgrade = mysqli_real_escape_string($db,'2.25');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 92.49){
-                                        $numgrade = mysqli_real_escape_string($db,'2.00');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 95.49){
-                                        $numgrade = mysqli_real_escape_string($db,'1.75');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 97.49){
-                                        $numgrade = mysqli_real_escape_string($db,'1.50');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade <= 99.99){
-                                        $numgrade = mysqli_real_escape_string($db,'1.25');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }elseif ($ofgrade == 100){
-                                        $numgrade = mysqli_real_escape_string($db,'1.00');
-                                        $remarks = mysqli_real_escape_string($db,'Passed');
-                                      }
-                                    }
-                                     $absences = mysqli_real_escape_string($db,$_POST['absences']);
-                                     
-                                     
-                                     
-
-
-                    $query = mysqli_query($db,"
-                      UPDATE tbl_enrolled_subjects 
-                      SET prelim='".$prelim."',
-                    midterm='".$midterm."',
-                    finalterm='".$finalterm."',
-                    ofgrade='".$ofgrade."',
-                    numgrade='".$numgrade."',
-                    absences='".$absences."',
-                    remarks='".$remarks."',
-                    last_update ='".date('Y-m-d H:i:s')."', 
-                    updated ='".$_SESSION['role']." - ".$_SESSION['name']."' 
-                      WHERE enrolled_subj_id = '".$enrolled_subj_id."'")or die(mysqli_error($db));
-                    if($query == true)
-                      { 
-                        header("Refresh:0");
-                        message("Successfully Updated!","success");
-                      }else{
-                        header("Refresh:0");
-                        message("Something went wrong!","danger");
-                      }
-                          }
-                          else
-                          { 
-                            if (empty($_POST['midterm'])) {
-                        $midterm = mysqli_real_escape_string($db,'0');
-                      }else{
-                      $midterm = mysqli_real_escape_string($db,$_POST['midterm']);
-                      }
-                      if (empty($_POST['finalterm'])) {
-                        $finalterm = mysqli_real_escape_string($db,'0');
-                      }else{
-                      $finalterm = mysqli_real_escape_string($db,$_POST['finalterm']);
-                      }
-                      $ofgrade = mysqli_real_escape_string($db,number_format( (float)( ($midterm * 0.4) + ($finalterm * 0.6)), 2, '.', '' ) );
-
-                      if ($midterm == '0' || $finalterm == '0') {
-                        $remarks = mysqli_real_escape_string($db,'INC');
-                        $numgrade = mysqli_real_escape_string($db,'INC');
-                      }else{
-                      if ($ofgrade <= 74) {
-                        $numgrade = mysqli_real_escape_string($db,'5.00');
-                        $remarks = mysqli_real_escape_string($db,'Failed');
-                      }elseif ($ofgrade <= 79){
-                        $numgrade = mysqli_real_escape_string($db,'3.00');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 82.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.75');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 84.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.50');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 87.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.25');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 92.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.00');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 95.49){
-                        $numgrade = mysqli_real_escape_string($db,'1.75');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 97.49){
-                        $numgrade = mysqli_real_escape_string($db,'1.50');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 99.49){
-                        $numgrade = mysqli_real_escape_string($db,'1.25');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade == 100){
-                        $numgrade = mysqli_real_escape_string($db,'1.00');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }}
-                        $absences = mysqli_real_escape_string($db,$_POST['absences']);
-                        
-                        $prelim = '';
-
-                        $query = mysqli_query($db,"
-                          UPDATE tbl_enrolled_subjects 
-                          SET prelim='".$prelim."',
-                          midterm='".$midterm."',
-                          finalterm='".$finalterm."',
-                          ofgrade='".$ofgrade."',
-                          numgrade='".$numgrade."',
-                          absences='".$absences."',
-                          remarks='".$remarks."',
-                          last_update ='".date('Y-m-d H:i:s')."',
-                          updated ='".$_SESSION['role']." - ".$_SESSION['name']."'
-                          WHERE enrolled_subj_id = '".$enrolled_subj_id."'")or die(mysqli_error($db));
-                        if($query == true)
-                          { 
-                            header("Refresh:0");
-                            message("Successfully Updated!","success");
-                          }else{
-                            header("Refresh:0");
-                            message("Something went wrong!","danger");
-                          }
-                          }
-
-
-
-                   
-                    
-                  //====================================IF SUMMER TERM==============================
-}else{
-                    
-                      if (empty($_POST['midterm'])) {
-                        $midterm = mysqli_real_escape_string($db,'0');
-                      }else{
-                      $midterm = mysqli_real_escape_string($db,$_POST['midterm']);
-                      }
-                      if (empty($_POST['finalterm'])) {
-                        $finalterm = mysqli_real_escape_string($db,'0');
-                      }else{
-                      $finalterm = mysqli_real_escape_string($db,$_POST['finalterm']);
-                      }
-                      $ofgrade = mysqli_real_escape_string($db,number_format( (float)( ($midterm * 0.4) + ($finalterm * 0.6)), 2, '.', '' ) );
-
-                      if ($midterm == '0' || $finalterm == '0') {
-                        $remarks = mysqli_real_escape_string($db,'INC');
-                        $numgrade = mysqli_real_escape_string($db,'INC');
-                      }else{
-                      if ($ofgrade <= 74) {
-                        $numgrade = mysqli_real_escape_string($db,'5.00');
-                        $remarks = mysqli_real_escape_string($db,'Failed');
-                      }elseif ($ofgrade <= 79){
-                        $numgrade = mysqli_real_escape_string($db,'3.00');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 82.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.75');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 84.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.50');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 87.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.25');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 92.49){
-                        $numgrade = mysqli_real_escape_string($db,'2.00');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 95.49){
-                        $numgrade = mysqli_real_escape_string($db,'1.75');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 97.49){
-                        $numgrade = mysqli_real_escape_string($db,'1.50');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade <= 99.49){
-                        $numgrade = mysqli_real_escape_string($db,'1.25');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }elseif ($ofgrade == 100){
-                        $numgrade = mysqli_real_escape_string($db,'1.00');
-                        $remarks = mysqli_real_escape_string($db,'Passed');
-                      }}
-                        $absences = mysqli_real_escape_string($db,$_POST['absences']);
-                        
-                        $prelim = '';
-
-                        $query = mysqli_query($db,"
-                          UPDATE tbl_enrolled_subjects 
-                          SET  prelim='".$prelim."',
-                          midterm='".$midterm."',
-                          finalterm='".$finalterm."',
-                          ofgrade='".$ofgrade."',
-                          numgrade='".$numgrade."',
-                          absences='".$absences."',
-                          remarks='".$remarks."',
-                          last_update ='".date('Y-m-d H:i:s')."',
-                          updated ='".$_SESSION['role']." - ".$_SESSION['name']."'
-                           WHERE enrolled_subj_id = '".$enrolled_subj_id."'")or die(mysqli_error($db));
-                        if($query == true)
-                          { 
-                            header("Refresh:0");
-                            message("Successfully Updated!","success");
-                          }else{
-                            header("Refresh:0");
-                            message("Something went wrong!","danger");
-                          }
-                    }
-                    
-                    
-
-
-
-                    
-                  }}
+}
                   ?>
                                   
 

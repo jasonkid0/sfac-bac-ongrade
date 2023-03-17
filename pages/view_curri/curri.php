@@ -139,7 +139,7 @@ while ($row3 = mysqli_fetch_array($year_sem)) {
    $sy=mysqli_query($db,"SELECT * from tbl_schoolyears
    left join tbl_year_levels on tbl_schoolyears.year_id=tbl_year_levels.year_id 
    Left join tbl_courses ON tbl_courses.course_id = tbl_schoolyears.course_id
-   where stud_id='$_GET[stud_id]' and year_level='$row3[year_level]' and sem_id='$row3[semester]' ")or die(mysqli_error($db));
+   where stud_id='$_GET[stud_id]' and year_level='$row3[year_level]' and sem_id='$row3[semester]' and remark = 'Approved' ")or die(mysqli_error($db));
    $syrow=mysqli_fetch_array($sy);
    if (mysqli_num_rows($sy) >= 1) 
    {
